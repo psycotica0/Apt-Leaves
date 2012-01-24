@@ -1,23 +1,16 @@
 #!/bin/sh
 
-packages="$(dpkg -l | grep '^i' | cut -f 3 -d ' ' | sort | uniq)"
-dotty_file="$(mktemp)"
-apt-cache dotty > "$dotty_file"
+install_file="$(mktemp)"
+depended_upon_file="$(mktemp)"
 
-IFS="
-"
+# Grab the list of all packages I have installed, sort them, and put them into install file
+dpkg -l | grep '^i' | cut -f 3 -d ' ' | sort | uniq > "$install_file"
 
-for line in $(cat "$dotty_file"); do
-	if [ -z "$(echo "$line" | sed -n '/->/p')" ]; then
-		#echo "$line is not an arrow"
-		continue;
-	fi
-	# This should be cut... (Maybe on -d '"' and -f 4...)
-	depended_on="$(echo "$line" | sed 's/"[^"]*" -> "\([^"]*\)".*/\1/')"
-	# Grep -f
-	packages="$(echo "$packages" | sed "/^$depended_on\$/d")"
-done
+# Grab the list of all packages that are depended upon, sort them, and put them into depended_upon_file
+apt-cache dotty | grep -F -- '->' | cut -d '"' -f4 | sort | uniq > "$depended_upon_file"
 
-rm -f "$dotty_file"
+# Now use comm to extract only the packages that are installed but not depended upon
+comm -23 "$install_file" "$depended_upon_file"
 
-echo "$packages"
+# Then cleanup
+rm "$install_file" "$depended_upon_file"
