@@ -7,23 +7,17 @@ apt-cache dotty > "$dotty_file"
 IFS="
 "
 
-unique_depended_on=""
-
 for line in $(cat "$dotty_file"); do
 	if [ -z "$(echo "$line" | sed -n '/->/p')" ]; then
 		#echo "$line is not an arrow"
 		continue;
 	fi
+	# This should be cut... (Maybe on -d '"' and -f 4...)
 	depended_on="$(echo "$line" | sed 's/"[^"]*" -> "\([^"]*\)".*/\1/')"
-	unique_depended_on="$(echo -e "${depended_on}\n$unique_depended_on")"
+	# Grep -f
+	packages="$(echo "$packages" | sed "/^$depended_on\$/d")"
 done
 
 rm -f "$dotty_file"
 
-unique_depended_on="$(echo "$unique_depended_on" | sort | uniq)"
-
-intersection="$(echo -n "${unique_depended_on}\n$packages" | sort | uniq -d)"
-
-leaves="$(echo -n "${unique_depended_on}\n$intersection" | sort | uniq -u)"
-
-echo "$leaves"
+echo "$packages"
