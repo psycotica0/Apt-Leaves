@@ -1,0 +1,12 @@
+apt-leaves
+
+This program is used to find all packages installed on your debian system that aren't depended upon by other packages.
+
+I wrote it to help me clean packages I installed once then forgot about off my computer by putting them into a list for me.
+
+Also, with apt-get autoremove it also is the case that often I'll go through a session of uninstalling programs with this list, then
+it'll suddenly be like "Oh, well if you're uninstalling those, then all of these are useless now too"
+That makes me happy.
+
+So, you just run it.
+Then it outputs to stdout the list of packages.
